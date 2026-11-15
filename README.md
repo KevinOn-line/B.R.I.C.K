@@ -3,16 +3,22 @@
 The Windows desktop app displays the latest JSON report pushed by a Raspberry Pi
 over Ethernet. The browser-only Vite preview uses `src/data/mockReport.json`;
 the packaged desktop app starts empty and waits for a live report.
-Download node.js https://nodejs.org/en 
+The desktop app counts each accepted inspection report as one USB checked and
+persists that total and its good/bad classification counts in the current
+Windows user's application data directory. Confidence is calculated as
+`good checks / (good checks + bad checks) * 100`; unknown classifications are
+excluded, and the face continues to reflect only the latest check. Confidence
+is red through 40%, yellow above 40% through 60%, and green above 60%.
+Install Node.js https://nodejs.org/en
 
 ## Run the desktop app in development
 
 Install dependencies, then run:
 
 ```powershell
-cd brick-frontend   
-npm.cmd install
-npm.cmd run desktop:dev
+cd brick-frontend
+npm install
+npm run desktop:dev
 ```
 
 ## Build the Windows installer
@@ -20,7 +26,8 @@ npm.cmd run desktop:dev
 Run on Windows:
 
 ```powershell
-npm.cmd run package:win
+cd brick-frontend
+npm run package:win
 ```
 
 The NSIS installer is written to `release/`.
