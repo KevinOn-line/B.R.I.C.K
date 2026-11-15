@@ -1,0 +1,110 @@
+
+{
+  "metadata": {
+    "project_name": "B.R.I.C.K.",
+    "full_name": "Boundary Regulation & Intrusion Checking Kit",
+    "report_version": "1.0.0",
+    "event_id": "BRICK-2026-000001",
+    "report_type": "SECURITY_INCIDENT",
+    "timestamp": "2026-11-14T17:30:00Z",
+    "timezone": "UTC"
+  },
+
+  "device": {
+    "device_detected": true,
+    "connection_status": "CONNECTED",
+    "device_name": "Unknown USB Device",
+    "device_type": "USB_STORAGE",
+    "device_identifier": "USB-DEVICE-001",
+    "manufacturer": "UNKNOWN",
+    "vendor_id": "0000",
+    "product_id": "0000",
+    "trusted_device": false,
+    "previously_registered": false
+  },
+
+  "inspection": {
+    "inspection_started": true,
+    "inspection_completed": true,
+    "inspection_status": "COMPLETED",
+    "inspection_method": "DEVICE_METADATA_AND_TEST_INDICATORS",
+    "inspection_timestamp": "2026-11-14T17:30:05Z",
+    "indicators_found": 1,
+    "inspection_errors": []
+  },
+
+  "detection": {
+    "detection_engine": "PYTORCH",
+    "model_name": "BRICK-Threat-Classifier",
+    "model_version": "1.0.0",
+    "model_loaded": true,
+    "scan_completed": true,
+    "threat_detected": true,
+    "threat_category": "SIMULATED_MALWARE",
+    "detection_confidence": 0.97,
+    "detection_status": "DETECTED",
+    "indicators": [
+      {
+        "indicator_id": "TEST-001",
+        "indicator_name": "SIMULATED_THREAT_INDICATOR",
+        "severity": "HIGH",
+        "description": "Harmless predefined test indicator detected."
+      }
+    ]
+  },
+
+  "risk_assessment": {
+    "risk_level": "HIGH",
+    "risk_score": 97,
+    "assessment_status": "COMPLETED",
+    "assessment_reason": "Controlled test threat indicator detected.",
+    "recommended_action": "ISOLATE_AND_REVIEW"
+  },
+
+  "response": {
+    "response_triggered": true,
+    "action_taken": "BLOCKED",
+    "action_successful": true,
+    "device_access_status": "RESTRICTED",
+    "network_action": "NONE",
+    "response_timestamp": "2026-11-14T17:30:06Z",
+    "response_details": "Simulated test event processed successfully."
+  },
+
+  "network_security": {
+    "monitoring_enabled": true,
+    "dns_filtering_enabled": true,
+    "suspicious_domain_detected": false,
+    "malicious_connection_detected": false,
+    "blocked_requests": 0,
+    "network_status": "NORMAL"
+  },
+
+  "system": {
+    "raspberry_pi_status": "ONLINE",
+    "backend_status": "RUNNING",
+    "model_status": "LOADED",
+    "application_connection": "CONNECTED",
+    "communication_status": "SUCCESS",
+    "last_heartbeat": "2026-11-14T17:30:07Z",
+    "system_errors": []
+  },
+
+  "application": {
+    "report_transmitted": true,
+    "transmission_format": "JSON",
+    "transmission_status": "SUCCESS",
+    "display_notification": true,
+    "notification_type": "SECURITY_WARNING",
+    "notification_message": "A simulated threat indicator was detected."
+  },
+
+  "summary": {
+    "overall_status": "THREAT_DETECTED",
+    "device_status": "UNTRUSTED",
+    "threat_status": "DETECTED",
+    "response_status": "SUCCESSFUL",
+    "user_attention_required": true,
+    "final_message": "B.R.I.C.K. detected a simulated threat indicator and successfully processed the configured test response."
+  }
+}

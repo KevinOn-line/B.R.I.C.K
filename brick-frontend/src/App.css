@@ -1,0 +1,480 @@
+.dashboard {
+  --green: #00e739;
+  --green-dim: #00c969;
+  --frame: #595959;
+  --panel: #505050;
+  --page: #414141;
+  display: grid;
+  grid-template-columns: minmax(160px, 0.75fr) minmax(320px, 1.4fr) minmax(
+      160px,
+      0.75fr
+    );
+  grid-template-rows: minmax(110px, 1fr) minmax(110px, 1fr) minmax(155px, 1.42fr);
+  gap: 12px 16px;
+  width: min(100%, 1120px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 12px 16px;
+  background: var(--page);
+  color: var(--green);
+  font-family: "Courier New", Consolas, monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.side-column {
+  display: grid;
+  grid-template-rows: minmax(110px, 1fr) minmax(110px, 1fr) minmax(155px, 1.42fr);
+  grid-row: 1 / 4;
+  gap: 12px;
+  min-width: 0;
+}
+
+.side-column:first-child {
+  grid-column: 1;
+}
+
+.side-column:last-of-type {
+  grid-column: 3;
+}
+
+.readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 14px 10px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--panel);
+  text-align: center;
+}
+
+.readout h2,
+.readout p {
+  max-width: 100%;
+  margin: 0;
+  color: var(--green);
+  font: inherit;
+}
+
+.readout h2 {
+  margin-bottom: 18px;
+  font-size: clamp(18px, 2.8vw, 32px);
+  line-height: 1.1;
+}
+
+.readout p {
+  font-size: clamp(15px, 2.1vw, 23px);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.dashboard .tone-green,
+.dashboard .tone-trusted {
+  color: var(--green);
+}
+
+.dashboard .tone-orange,
+.dashboard .tone-unknown {
+  color: #ffb638;
+}
+
+.dashboard .tone-red,
+.dashboard .tone-untrusted {
+  color: #ff4545;
+}
+
+.readout.tone-green h2,
+.readout.tone-green p,
+.readout.tone-trusted h2,
+.readout.tone-trusted p {
+  color: var(--green);
+}
+
+.readout.tone-orange h2,
+.readout.tone-orange p,
+.readout.tone-unknown h2,
+.readout.tone-unknown p {
+  color: #ffb638;
+}
+
+.readout.tone-red h2,
+.readout.tone-red p,
+.readout.tone-untrusted h2,
+.readout.tone-untrusted p {
+  color: #ff4545;
+}
+
+.device-card {
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.device-card h2 {
+  margin: 0 0 2px;
+  font-size: clamp(15px, 2vw, 21px);
+}
+
+.device-card p {
+  font-size: clamp(12px, 1.75vw, 18px);
+}
+
+.network-card {
+  gap: 10px;
+}
+
+.network-card h2 {
+  margin-bottom: 4px;
+}
+
+.network-card .network-status {
+  margin-bottom: 4px;
+  font-size: clamp(20px, 3vw, 34px);
+}
+
+.network-card p:last-child {
+  font-size: clamp(12px, 1.8vw, 18px);
+}
+
+.center-column {
+  display: grid;
+  grid-column: 2;
+  grid-row: 1 / 4;
+  grid-template-rows: minmax(0, 1.62fr) minmax(74px, 0.48fr) minmax(
+      90px,
+      0.55fr
+    );
+  gap: 12px;
+  min-width: 0;
+}
+
+.status-screen {
+  display: grid;
+  min-height: 0;
+  padding: 12px;
+  border-radius: 20px;
+  background: var(--frame);
+}
+
+.screen-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  border: 6px solid #777;
+  border-radius: 48px;
+  background: #000;
+}
+
+.pixel-face {
+  width: min(62%, 230px);
+  max-height: 75%;
+  color: var(--green-dim);
+}
+
+.screen-message {
+  margin: 8px 8px 0;
+  color: var(--green-dim);
+  font-size: clamp(15px, 2.4vw, 24px);
+  text-align: center;
+}
+
+.threat .pixel-face,
+.threat .screen-message {
+  color: #ff4545;
+}
+
+.inconclusive .pixel-face,
+.inconclusive .screen-message {
+  color: #ffb638;
+}
+
+.system-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  border-radius: 20px;
+  background: var(--panel);
+}
+
+.system-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  text-align: center;
+}
+
+.cell-label {
+  color: #f5f5f5;
+  font-size: clamp(14px, 2.3vw, 24px);
+  white-space: nowrap;
+}
+
+.cell-value {
+  color: var(--green);
+  font: inherit;
+  font-size: clamp(14px, 2.1vw, 22px);
+  overflow-wrap: anywhere;
+}
+
+.cell-value.warning {
+  color: #ffbf47;
+}
+
+.metric-note {
+  margin-top: 6px;
+  font-size: clamp(10px, 1.2vw, 13px);
+}
+
+.connection-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.connection-toggle:hover,
+.connection-toggle:focus-visible {
+  color: #fff;
+}
+
+.terminal-button {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 6px;
+  overflow: hidden;
+  border: 6px solid var(--frame);
+  border-radius: 24px;
+  background: #000;
+  color: var(--green);
+  font: inherit;
+  font-size: clamp(8px, 0.9vw, 10px);
+  line-height: 1.15;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.terminal-button > span {
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.terminal-button:hover,
+.terminal-button:focus-visible {
+  border-color: #777;
+}
+
+.terminal-prompt {
+  color: #777;
+  font-size: 0.85em;
+}
+
+.report-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(720px, calc(100vw - 32px));
+  max-height: 85vh;
+  margin: auto;
+  padding: 18px;
+  border: 8px solid var(--frame);
+  border-radius: 20px;
+  background: var(--page);
+  color: var(--green);
+}
+
+.report-dialog:not([open]) {
+  display: none;
+}
+
+.report-dialog::backdrop {
+  background: rgb(0 0 0 / 75%);
+  backdrop-filter: blur(3px);
+}
+
+.report-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.report-dialog-header h2 {
+  margin: 0;
+  color: var(--green);
+  font-size: clamp(18px, 2.4vw, 24px);
+}
+
+.report-close {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border: 2px solid var(--green);
+  border-radius: 8px;
+  background: #000;
+  color: var(--green);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.report-close:hover,
+.report-close:focus-visible {
+  background: var(--panel);
+  color: #fff;
+}
+
+.json-view {
+  margin: 0;
+  padding: 18px;
+  overflow: auto;
+  border: 2px solid var(--frame);
+  border-radius: 10px;
+  background: #000;
+  color: var(--green);
+  font-size: 13px;
+  line-height: 1.5;
+  text-transform: none;
+}
+
+.receiver-details {
+  display: grid;
+  gap: 14px;
+  overflow: auto;
+  line-height: 1.5;
+}
+
+.receiver-details p {
+  margin: 0;
+}
+
+.receiver-details ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.receiver-details li {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.receiver-details code {
+  display: block;
+  padding: 8px;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--frame);
+  border-radius: 6px;
+  background: #000;
+  color: var(--green);
+  font: 12px/1.5 "Courier New", Consolas, monospace;
+  text-transform: none;
+  user-select: text;
+}
+
+.receiver-token {
+  display: grid;
+  gap: 6px;
+}
+
+.receiver-status {
+  font-weight: 700;
+}
+
+.receiver-help {
+  color: #b7b7b7;
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .dashboard {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto;
+    gap: 12px;
+  }
+
+  .side-column {
+    display: contents;
+  }
+
+  .center-column {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    grid-template-rows: minmax(250px, 2fr) minmax(88px, 0.7fr) minmax(
+        96px,
+        0.7fr
+      );
+  }
+
+  .action-card {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .confidence-card {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .type-card {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .risk-card {
+    grid-column: 2;
+    grid-row: 3;
+  }
+
+  .device-card,
+  .network-card {
+    grid-column: 1 / -1;
+    min-height: 150px;
+  }
+
+  .device-card {
+    grid-row: 4;
+  }
+
+  .network-card {
+    grid-row: 5;
+  }
+
+  .readout h2 {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .dashboard {
+    padding: 10px;
+  }
+
+  .system-strip {
+    gap: 4px;
+  }
+
+  .cell-label {
+    font-size: 13px;
+  }
+
+  .cell-value {
+    font-size: 13px;
+  }
+}
