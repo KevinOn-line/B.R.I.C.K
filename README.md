@@ -9,8 +9,9 @@ the packaged desktop app starts empty and waits for a live report.
 Install dependencies, then run:
 
 ```powershell
-npm install
-npm run desktop:dev
+cd brick-frontend   
+npm.cmd install
+npm.cmd run desktop:dev
 ```
 
 ## Build the Windows installer
@@ -18,7 +19,7 @@ npm run desktop:dev
 Run on Windows:
 
 ```powershell
-npm run package:win
+npm.cmd run package:win
 ```
 
 The NSIS installer is written to `release/`.
