@@ -14,6 +14,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let mainWindow;
 let receiverToken;
 let latestReport = null;
+let scanStats = { usbScanCount: 0, goodUsbCount: 0, badUsbCount: 0 };
+let scanStatsQueue = Promise.resolve();
 
 function isPrivateAddress(address) {
   const normalized = address.replace(/^::ffff:/i, "").toLowerCase();
@@ -57,6 +59,86 @@ async function loadReceiverToken() {
   const token = randomBytes(32).toString("hex");
   await writeFile(tokenPath, token, { encoding: "utf8", flag: "wx", mode: 0o600 });
   return token;
+}
+
+function isValidCount(value) {
+  return Number.isSafeInteger(value) && value >= 0;
+}
+
+async function loadLegacyUsbScanCount() {
+  const countPath = path.join(app.getPath("userData"), "usb-scan-count");
+  try {
+    const countText = (await readFile(countPath, "utf8")).trim();
+    const storedCount = Number(countText);
+    if (!/^\d+$/.test(countText) || !isValidCount(storedCount)) {
+      throw new Error("Stored USB scan count is invalid.");
+    }
+    return storedCount;
+  } catch (error) {
+    if (error.code === "ENOENT") return 0;
+    throw error;
+  }
+}
+
+async function loadUsbScanStats() {
+  const statsPath = path.join(app.getPath("userData"), "usb-scan-stats.json");
+  try {
+    const stats = JSON.parse(await readFile(statsPath, "utf8"));
+    if (
+      !stats ||
+      typeof stats !== "object" ||
+      Array.isArray(stats) ||
+      !["usbScanCount", "goodUsbCount", "badUsbCount"].every((key) =>
+        isValidCount(stats[key]),
+      )
+    ) {
+      throw new Error("Stored USB scan statistics are invalid.");
+    }
+    return stats;
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+    return {
+      usbScanCount: await loadLegacyUsbScanCount(),
+      goodUsbCount: 0,
+      badUsbCount: 0,
+    };
+  }
+}
+
+function getReportMaliciousResult(report) {
+  if (typeof report.malicious === "boolean") return report.malicious;
+  if (typeof report.malicious === "string") {
+    const malicious = report.malicious.trim().toUpperCase();
+    if (malicious === "YES") return true;
+    if (malicious === "NO") return false;
+  }
+  if (typeof report.detection?.threat_detected === "boolean") {
+    return report.detection.threat_detected;
+  }
+  return undefined;
+}
+
+function recordUsbScan(report) {
+  const update = scanStatsQueue.then(async () => {
+    const maliciousResult = getReportMaliciousResult(report);
+    const nextStats = {
+      usbScanCount: scanStats.usbScanCount + 1,
+      goodUsbCount: scanStats.goodUsbCount + (maliciousResult === false ? 1 : 0),
+      badUsbCount: scanStats.badUsbCount + (maliciousResult === true ? 1 : 0),
+    };
+    const statsPath = path.join(app.getPath("userData"), "usb-scan-stats.json");
+    await writeFile(statsPath, JSON.stringify(nextStats), {
+      encoding: "utf8",
+      mode: 0o600,
+    });
+    scanStats = nextStats;
+    return scanStats;
+  });
+  scanStatsQueue = update.then(
+    () => undefined,
+    () => undefined,
+  );
+  return update;
 }
 
 function sendJson(response, status, payload) {
@@ -143,9 +225,14 @@ async function handleRequest(request, response) {
     return;
   }
 
+  const updatedUsbScanStats = await recordUsbScan(report);
   latestReport = report;
   if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send("brick:report-received", report);
+    mainWindow.webContents.send(
+      "brick:report-received",
+      report,
+      updatedUsbScanStats,
+    );
   }
 
   sendJson(response, 200, { status: "accepted" });
@@ -199,11 +286,13 @@ ipcMain.handle("brick:receiver-info", () => ({
   token: receiverToken,
   addresses: getReceiverAddresses(),
   latestReport,
+  ...scanStats,
 }));
 
 app.whenReady().then(async () => {
   try {
     receiverToken = await loadReceiverToken();
+    scanStats = await loadUsbScanStats();
     await new Promise((resolve, reject) => {
       receiver.once("error", reject);
       receiver.listen(PORT, "0.0.0.0", resolve);

@@ -5,6 +5,20 @@ import "./App.css";
 const normalize = (value) =>
   typeof value === "string" ? value.trim().toUpperCase().replace(/[\s-]+/g, "_") : "";
 
+function getMaliciousResult(report) {
+  const malicious = report?.malicious;
+  if (typeof malicious === "boolean") return malicious;
+  if (typeof malicious === "string") {
+    const normalized = normalize(malicious);
+    if (normalized === "YES") return true;
+    if (normalized === "NO") return false;
+  }
+
+  return typeof report?.detection?.threat_detected === "boolean"
+    ? report.detection.threat_detected
+    : undefined;
+}
+
 function isDeviceConnected(device) {
   if (!device) return false;
   if (typeof device.connected === "boolean") return device.connected;
@@ -86,21 +100,11 @@ function isNetworkActive(network = {}) {
 }
 
 function normalizeReport(report = {}) {
-  const topLevelDetails = report?.details ?? {};
-  const legacySystem = report?.system ?? {};
-  const legacyDevice = report?.device ?? {};
-  const legacyDetection = report?.detection ?? {};
-  const legacyNetwork = report?.network_security ?? {};
-  const legacyResponse = report?.response ?? {};
-  const legacyRisk = report?.risk_assessment ?? {};
-  const legacySummary = report?.summary ?? {};
-
-  const legacyThreatDetected =
-    typeof report?.malicious === "string"
-      ? report.malicious.trim().toUpperCase() === "YES"
-      : typeof report?.malicious === "boolean"
-        ? report.malicious
-        : undefined;
+  const details = report?.details ?? {};
+  const device = report?.device ?? {};
+  const detection = report?.detection ?? {};
+  const network = report?.network_security ?? {};
+  const summary = report?.summary ?? {};
 
   return {
     ...report,
@@ -108,117 +112,42 @@ function normalizeReport(report = {}) {
       ...(report?.metadata ?? {}),
       timestamp: report?.metadata?.timestamp ?? report?.timestamp ?? "Unknown",
     },
-    system: {
-      ...(report?.system ?? {}),
-      connection_status:
-        report?.system?.connection_status ??
-        legacySystem.connection_status ??
-        report?.connection_status ??
-        "",
-      backend_status:
-        report?.system?.backend_status ?? legacySystem.backend_status ?? report?.backend_status ?? "",
-    },
     device: {
-      ...(report?.device ?? {}),
+      ...device,
       connected:
-        typeof report?.device?.connected === "boolean"
-          ? report.device.connected
-          : typeof legacyDevice.connected === "boolean"
-            ? legacyDevice.connected
-            : typeof report?.connected === "boolean"
-              ? report.connected
-              : true,
-      device_name:
-        report?.device?.device_name ?? legacyDevice.device_name ?? report?.device_name ?? "Unknown",
-      manufacturer:
-        report?.device?.manufacturer ?? legacyDevice.manufacturer ?? report?.manufacturer ?? "Unknown",
-      device_type:
-        report?.device?.device_type ?? legacyDevice.device_type ?? report?.device_type ?? "Unknown",
-      vendor_id:
-        report?.device?.vendor_id ?? legacyDevice.vendor_id ?? report?.vendor_id ?? "Unknown",
-      product_id:
-        report?.device?.product_id ?? legacyDevice.product_id ?? report?.product_id ?? "Unknown",
-      trusted:
-        typeof report?.device?.trusted === "boolean"
-          ? report.device.trusted
-          : typeof legacyDevice.trusted === "boolean"
-            ? legacyDevice.trusted
-            : typeof report?.trusted === "boolean"
-              ? report.trusted
-              : undefined,
-      trust_status:
-        report?.device?.trust_status ?? legacyDevice.trust_status ?? report?.trust_status ?? "",
+        typeof device.connected === "boolean"
+          ? device.connected
+          : typeof report?.connected === "boolean"
+            ? report.connected
+            : true,
     },
     detection: {
-      ...(report?.detection ?? {}),
-      threat_detected:
-        report?.detection?.threat_detected ??
-        legacyDetection.threat_detected ??
-        legacyThreatDetected,
-      confidence:
-        report?.detection?.confidence ??
-        report?.confidence ??
-        legacyDetection.confidence ??
-        report?.confidence_score,
+      ...detection,
       category:
-        report?.detection?.category ??
-        legacyDetection.category ??
-        legacyDetection.threat_category ??
-        topLevelDetails.threat_type ??
+        detection.category ??
+        detection.threat_category ??
+        details.threat_type ??
         "Unknown",
     },
     network_security: {
-      ...(report?.network_security ?? {}),
+      ...network,
       status:
-        report?.network_security?.status ??
-        legacyNetwork.status ??
+        network.status ??
         report?.security_status ??
-        report?.network_status ??
-        "Unknown",
+        report?.network_status,
       active:
-        typeof report?.network_security?.active === "boolean"
-          ? report.network_security.active
-          : typeof legacyNetwork.active === "boolean"
-            ? legacyNetwork.active
-            : typeof report?.network_active === "boolean"
-              ? report.network_active
-              : undefined,
-      blocked_requests:
-        report?.network_security?.blocked_requests ??
-        legacyNetwork.blocked_requests ??
-        report?.blocked_requests ??
-        0,
-    },
-    response: {
-      ...(report?.response ?? {}),
-      action_taken:
-        report?.response?.action_taken ??
-        legacyResponse.action_taken ??
-        report?.action_taken ??
-        "",
-      device_access:
-        report?.response?.device_access ??
-        legacyResponse.device_access ??
-        legacyResponse.device_access_status ??
-        report?.device_access ??
-        "",
-    },
-    risk_assessment: {
-      ...(report?.risk_assessment ?? {}),
-      score:
-        report?.risk_assessment?.score ??
-        legacyRisk.score ??
-        legacyRisk.risk_score ??
-        report?.risk_score ??
-        0,
+        typeof network.active === "boolean"
+          ? network.active
+          : typeof report?.network_active === "boolean"
+            ? report.network_active
+            : undefined,
     },
     summary: {
-      ...(report?.summary ?? {}),
+      ...summary,
       message:
-        report?.summary?.message ??
-        legacySummary.message ??
+        summary.message ??
         report?.message ??
-        topLevelDetails.threat_details ??
+        details.threat_details ??
         "Nothing to Report",
     },
   };
@@ -230,6 +159,14 @@ function App() {
   const [connected, setConnected] = useState(
     () => !desktopBridge && Boolean(mockReport),
   );
+  const [scanStats, setScanStats] = useState(() => {
+    const maliciousResult = getMaliciousResult(mockReport);
+    return {
+      usbScanCount: desktopBridge || !mockReport ? 0 : 1,
+      goodUsbCount: !desktopBridge && maliciousResult === false ? 1 : 0,
+      badUsbCount: !desktopBridge && maliciousResult === true ? 1 : 0,
+    };
+  });
   const [showReport, setShowReport] = useState(false);
   const [showConnection, setShowConnection] = useState(false);
   const [receiverInfo, setReceiverInfo] = useState(null);
@@ -241,9 +178,10 @@ function App() {
     if (!desktopBridge) return undefined;
 
     let active = true;
-    const unsubscribe = desktopBridge.onReport((incomingReport) => {
+    const unsubscribe = desktopBridge.onReport((incomingReport, incomingScanStats) => {
       setReport(incomingReport);
       setConnected(true);
+      setScanStats(incomingScanStats);
       setReceiverError("");
     });
 
@@ -252,6 +190,11 @@ function App() {
       .then((info) => {
         if (!active) return;
         setReceiverInfo(info);
+        setScanStats({
+          usbScanCount: info.usbScanCount,
+          goodUsbCount: info.goodUsbCount,
+          badUsbCount: info.badUsbCount,
+        });
         if (info.latestReport) {
           setReport(info.latestReport);
           setConnected(true);
@@ -304,31 +247,35 @@ function App() {
   const detection = normalizedReport.detection ?? {};
   const network = normalizedReport.network_security ?? {};
   const device = normalizedReport.device;
-  const maliciousValue = report?.malicious;
-  const hasMaliciousFlag =
-    typeof maliciousValue === "boolean" ||
-    (typeof maliciousValue === "string" &&
-      ["YES", "NO"].includes(normalize(maliciousValue)));
-  const isMalicious =
-    typeof maliciousValue === "string"
-      ? normalize(maliciousValue) === "YES"
-      : typeof maliciousValue === "boolean"
-        ? maliciousValue
-        : detection.threat_detected === true;
-  const threatKnown =
-    hasMaliciousFlag || typeof detection.threat_detected === "boolean";
-  const threatDetected = isMalicious;
+  const maliciousResult = getMaliciousResult(report);
+  const isMalicious = maliciousResult === true;
+  const threatKnown = maliciousResult !== undefined;
+  const classifiedUsbCount = scanStats.goodUsbCount + scanStats.badUsbCount;
+  const confidencePercent =
+    classifiedUsbCount > 0
+      ? (scanStats.goodUsbCount / classifiedUsbCount) * 100
+      : null;
+  const confidenceTone =
+    confidencePercent === null
+      ? "unknown"
+      : confidencePercent <= 40
+        ? "red"
+        : confidencePercent <= 60
+          ? "yellow"
+          : "green";
   const deviceConnected = isDeviceConnected(device);
   const deviceTrust = isMalicious ? "untrusted" : "trusted";
   const action = isMalicious
     ? { label: "REMOVE", tone: "red" }
     : { label: "NOT NEEDED", tone: "green" };
-  const networkState = getNetworkState(network);
-  const networkActive = isNetworkActive(network);
-  const faceState = !threatKnown ? "inconclusive" : threatDetected ? "threat" : "safe";
+  const networkActive = connected && isNetworkActive(network);
+  const networkState = connected
+    ? getNetworkState(network)
+    : { label: "Inactive", tone: "red" };
+  const faceState = !threatKnown ? "inconclusive" : isMalicious ? "threat" : "safe";
   const faceMessage = !threatKnown
     ? "Inconclusive"
-    : threatDetected
+    : isMalicious
       ? "Threat Detected!"
       : "No Threat Detected";
   const type =
@@ -350,6 +297,16 @@ function App() {
   const statusLabel =
     String(report?.status ?? "Scanned").trim() || "Scanned";
   const maliciousLabel = isMalicious ? "Yes" : "No";
+  const latestCheckLabel = !threatKnown
+    ? "Unknown"
+    : isMalicious
+      ? "Bad"
+      : "Good";
+  const latestCheckTone = !threatKnown
+    ? "orange"
+    : isMalicious
+      ? "red"
+      : "green";
 
   return (
     <main className="dashboard">
@@ -386,7 +343,7 @@ function App() {
               <g fill="currentColor">
                 <path d="M75 10h50v10h20v10h10v10h10v20h10v60h-10v20h-10v10h-10v10h-20v10H75v-10H55v-10H45v-10H35v-20H25V60h10V40h10V30h10V20h20V10Zm0 10v10H55v10H45v20H35v60h10v20h10v10h20v10h50v-10h20v-10h10v-20h10V60h-10V40h-10V30h-20V20H75Z" />
                 <path d="M60 75h20v20H60zM120 75h20v20h-20z" />
-                {threatDetected ? (
+                {isMalicious ? (
                   <path d="M65 135h10v-10h10v-10h30v10h10v10h10v10h-10v-10h-10v-10H85v10H75v10H65z" />
                 ) : threatKnown ? (
                   <path d="M65 120h10v10h10v10h30v-10h10v-10h10v10h-10v10h-10v10H85v-10H75v-10H65z" />
@@ -421,11 +378,9 @@ function App() {
                 ? "No connection"
                 : !connected
                   ? "Connection"
-                  : deviceTrust === "trusted"
-                    ? "Trusted"
-                    : deviceTrust === "untrusted"
-                      ? "Untrusted"
-                      : "Check"}
+                  : isMalicious
+                    ? "Untrusted"
+                    : "Trusted"}
             </span>
           </div>
           <div className="system-cell">
@@ -452,14 +407,21 @@ function App() {
       </section>
 
       <section className="side-column" aria-label="Security metrics">
-        <article className="readout action-card confidence-card tone-orange">
+        <article className="readout action-card confidence-card">
           <h2>Confidence</h2>
-          <p>WIP</p>
+          <p className={`confidence-value tone-${confidenceTone}`}>
+            {confidencePercent === null
+              ? "N/A"
+              : `${confidencePercent.toFixed(1)}%`}
+          </p>
         </article>
 
-        <article className="readout type-card risk-card tone-orange">
-          <h2>Risk score</h2>
-          <p>WIP</p>
+        <article className="readout type-card usb-count-card">
+          <h2>USBs checked</h2>
+          <p>{scanStats.usbScanCount}</p>
+          <span className={`latest-check-status tone-${latestCheckTone}`}>
+            Most recent: {latestCheckLabel}
+          </span>
         </article>
 
         <article
