@@ -1,0 +1,25 @@
+sudo nano /etc/systemd/system/usb-scanner.service
+
+////////////////
+[Unit]
+Description=B.R.I.C.K. Automated USB Malware Scanner and Reporter
+After=network.target local-fs.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/usr/local/bin
+ExecStart=/usr/bin/python3 /usr/local/bin/usb_monitor_daemon.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+/////////////////////////////
+sudo systemctl daemon-reload
+sudo systemctl enable usb-scanner.service
+sudo systemctl start usb-scanner.service
+
+check if it's Working
+sudo systemctl status usb-scanner.service
+reminder - password for sudo brick
