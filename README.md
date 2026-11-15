@@ -3,6 +3,7 @@
 The Windows desktop app displays the latest JSON report pushed by a Raspberry Pi
 over Ethernet. The browser-only Vite preview uses `src/data/mockReport.json`;
 the packaged desktop app starts empty and waits for a live report.
+Download node.js https://nodejs.org/en 
 
 ## Run the desktop app in development
 
