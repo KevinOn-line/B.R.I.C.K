@@ -107,6 +107,13 @@
   color: #ff4545;
 }
 
+.readout.confidence-card h2,
+.readout.confidence-card p,
+.readout.risk-card h2,
+.readout.risk-card p {
+  color: #fff;
+}
+
 .device-card {
   justify-content: flex-start;
   gap: 8px;
